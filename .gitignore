@@ -20,8 +20,8 @@ core
 core.*
 
 # Ignore compiled server / client binaries. 
-client
-server
+output_server
+output_client
 
 # Ignore test artifacts or logs
 *.test
@@ -36,3 +36,7 @@ logs/
 *.ppt
 *.xlsx
 *.zip
+
+# Don't include anything in documents folder. 
+/docs/*
+!/docs/.gitkeep
