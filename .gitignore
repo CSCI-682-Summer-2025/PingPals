@@ -1,0 +1,38 @@
+# Ignore object files and binaries
+*.o
+*.out
+*.exe
+*.a
+*.so
+*.dylib
+
+# Ignore editor/IDE temp files
+*~
+*.swp
+*.swo
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# Ignore core dumps
+core
+core.*
+
+# Ignore compiled server / client binaries. 
+client
+server
+
+# Ignore test artifacts or logs
+*.test
+*.dump
+*.trace
+logs/
+
+# Ignore project documentation. 
+*.pdf
+*.doc
+*.docx
+*.ppt
+*.xlsx
+*.zip
