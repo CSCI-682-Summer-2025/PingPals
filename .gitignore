@@ -27,7 +27,8 @@ output_client
 *.test
 *.dump
 *.trace
-logs/
+logs/*
+!logs/.gitkeep
 
 # Ignore project documentation. 
 *.pdf
@@ -38,5 +39,5 @@ logs/
 *.zip
 
 # Don't include anything in documents folder. 
-/docs/*
-!/docs/.gitkeep
+docs/*
+!docs/.gitkeep
