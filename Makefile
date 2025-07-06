@@ -1,23 +1,24 @@
+# Compiler and flags
 COMPILER = gcc
-CFLAGS = -Wall -Wextra -pthread -g
+CFLAGS = -Wall -Wextra -g -lws2_32
 
-SERVER_DIR = server/server.c
-CLIENT_DIR = client/client.c
+# Paths
+CLIENT_SRC = client/client.c client/client_utils.c
+SERVER_SRC = server/server.c
 
-SERVER_EXE = output_server
-CLIENT_EXE = output_client
+CLIENT_EXE = client.exe
+SERVER_EXE = server.exe
 
-.PHONY: all clean
+.PHONY: all client server clean
 
+# Default target
+all: client server
 
-all: $(SERVER_EXE) $(CLIENT_EXE)
+client: $(CLIENT_SRC)
+	$(COMPILER) $(CFLAGS) -o $(CLIENT_EXE) $(CLIENT_SRC)
 
-$(SERVER_EXE): $(SERVER_DIR)
-	$(COMPILER) $(CFLAGS) -o $@ $^
-
-$(CLIENT_EXE): $(CLIENT_DIR)
-	$(COMPILER) $(CFLAGS) -o $@ $^
-
+server: $(SERVER_SRC)
+	$(COMPILER) $(CFLAGS) -o $(SERVER_EXE) $(SERVER_SRC)
 
 clean:
-	rm -f $(SERVER_EXE) $(CLIENT_EXE)
+	del /f /q $(CLIENT_EXE) $(SERVER_EXE) 2>nul || true
