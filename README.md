@@ -96,3 +96,91 @@ Or just compile using a new name, like:
 gcc client/client.c client/client_utils.c -o client_v2.exe -lws2_32
 ./client_v2.exe
 
+---
+
+Updated instructions with implementation: Build & Run Instructions.
+
+This section explains how to build, run, and test the PingPals client-server project using both the Makefile or manual commands.
+
+Building the Project:
+
+  Using the Makefile (recommended):
+  
+  On Windows and Linux/macOS:
+    make all
+
+This builds both client.exe and server.exe, choosing platform-specific files automatically.
+
+Running the Server:
+
+  ./server.exe
+
+The server listens on port 9090 and waits for client connections.
+
+Running the Client:
+
+  In a new terminal, run:
+
+    ./client.exe
+
+Commands that can be run by the client:
+
+    /join #channel — to join or switch to a specific chat channel.
+
+    /leave — to leave the current chat channel.
+
+    /list — to display all active channels on the server.
+
+    /who — to see the list of users currently in your channel.
+
+    /msg @username message — to send a private message directly to another user.
+
+    /quit — to disconnect from the server and exit the client.
+
+    You can also send plain messages without commands, which will be broadcasted to everyone in your current channel to interact with the server.
+
+Running Tests:
+
+  Parser tests:
+
+    make test_parser
+
+  Stress test (requires Python installed and available in system path):
+
+    make stress_test
+
+  **Server must be running before running and starting stress test.
+
+  Alternatively, to do both:
+    make  run_stress_test_with_server
+
+Manual Compilation (if not using Makefile)
+
+Windows (with GCC/MinGW):
+
+  Compile server:
+
+    gcc server/server_main.c server/client_manager.c server/server_utils.c server/server_net_win.c -o server.exe -lws2_32 -Iinclude -Iclient
+
+  Compile client:
+
+    gcc client/client.c client/client_utils.c -o client.exe -lws2_32 -Iinclude
+
+Linux/macOS:
+
+  Compile server:
+
+    gcc server/server_main.c server/client_manager.c server/server_utils.c server/server_net_posix.c -o server.exe -Iinclude -Iclient -lpthread
+
+  Compile client:
+
+    gcc client/client.c client/client_utils.c -o client.exe -Iinclude
+
+Cleaning Build Artifacts
+
+  Remove compiled executables with:
+
+    make clean
+
+
+

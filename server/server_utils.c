@@ -85,7 +85,7 @@ void list_channels(socket_t sock) {
     }
     unlock_clients();
 
-    // If no channels found, inform client.
+    // If no channels found, let client know.
     if (seen_count == 0)
         strncat(response, " (none)\n", sizeof(response) - strlen(response) - 1);
 
@@ -145,11 +145,11 @@ void private_msg(socket_t sender, const char* target, const char* msg) {
     }
     unlock_clients();
 
-    // Target not found; notify sender.
+    // Target not found; let sender know.
     send_message(sender, "User not found.\n");
 }
 
-/// @brief Set a client's channel for joining.
+/// @brief Set a clients channel for joining.
 /// @param sock Client socket.
 /// @param name Channel name to join.
 void join_channel(socket_t sock, const char* name) {
@@ -185,7 +185,7 @@ void leave_channel(socket_t sock) {
 
 // Command Handler Functions
 
-/// @brief Handler for JOIN command; delegates to join_channel.
+/// @brief Handler for JOIN command.
 /// @param sock Client socket.
 /// @param args Channel name to join.
 void handle_join(socket_t sock, char* args) {
@@ -244,7 +244,7 @@ void handle_msg(socket_t sock, char* args) {
 /// @brief Handler for QUIT, /quit command.
 /// @param sock Client socket.
 /// @param args Unused.
-/// @note Actual quit handling is done in main loop by breaking on QUIT.
+/// @note Actual quit handling is done in main loop by breaking on quit.
 void handle_quit(socket_t sock, char* args) {
     (void)sock;
     (void)args;

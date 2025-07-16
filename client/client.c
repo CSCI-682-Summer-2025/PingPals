@@ -19,7 +19,7 @@
 
 #include "client_utils.h"
 
-// Platform-specific typedefs and macros.
+// OS sepecific typedefs and macros.
 #ifdef _WIN32
     typedef HANDLE thread_t;
     #define SHUT_RDWR SD_BOTH

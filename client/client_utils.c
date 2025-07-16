@@ -36,6 +36,7 @@ void get_timestamp(char* buffer, size_t len) {
 int is_self_message(const char* msg, const char* check_username) {
     const char* name_pos = strstr(msg, check_username); // Get where username is in the actual message.
     const char* colon_pos = strstr(msg, ":"); // Find 1st colon in message.
+    
     // Return 1 if matching username exists and is in correct position.
     return (name_pos != NULL && colon_pos != NULL && name_pos < colon_pos);
 }
