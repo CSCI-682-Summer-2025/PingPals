@@ -32,7 +32,7 @@ def stress_test(username):
         sock.sendall(b"/quit\n")
         sock.close()
     except Exception as e:
-        print(f"[ERROR] {username}: {e}")
+        print(f"{username}: {e}")
 
 
 def main():
