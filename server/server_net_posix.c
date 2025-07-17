@@ -19,7 +19,7 @@ socket_t net_create_socket() {
     return socket(AF_INET, SOCK_STREAM, 0);
 }
 
-/// @brief Binds a socket to the given port on all interfaces.
+/// @brief Binds a socket to the given port.
 /// @param sock Socket file descriptor.
 /// @param port Port to bind to.
 /// @return 0 on success, -1 on error.

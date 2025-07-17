@@ -24,7 +24,7 @@
 
 volatile bool server_running = true;
 
-/// @brief Function to handle a single client connection.
+/// @brief Handle a single client connection.
 ///        Handles user registration, commands, messaging, and cleanup.
 /// @param arg Pointer to socket_t (client socket).
 /// @return Thread exit value.
@@ -55,13 +55,13 @@ THREAD_RETURN handle_client(void* arg) {
         return THREAD_RET_VAL;
     }
 
-    // Step 4: Attempt to add client to global client list
+    // Step 4: Attempt to add client to clients list
     lock_clients();
     bool added = add_client(sock, buf);
     unlock_clients();
 
     if (!added) {
-        // Username taken or max clients reached
+        // Username taken or max clients reached.
         send_message(sock, "Username already taken.\n");
         shutdown(sock, SHUT_WR);
     // Add pause.
@@ -99,7 +99,7 @@ THREAD_RETURN handle_client(void* arg) {
         }
         command[i] = '\0';
 
-        // Convert command to uppercase for case-insensitive comparison.
+        // Convert command to uppercase. Allows for comparison.
         for (int j = 0; j < i; j++) {
             command[j] = (char)toupper((unsigned char)command[j]);
         }
@@ -126,14 +126,14 @@ THREAD_RETURN handle_client(void* arg) {
         }
     }
 
-    // Step 7: Handle client disconnect or recv error
+    // Step 7: Handle client disconnect.
     if (len == 0) {
         // Client closed connection normally
     } else if (len < 0) {
         perror("recv failed");
     }
 
-    // Step 8: Remove client from list and clean up.
+    // Step 8: Remove client from other clients.
     lock_clients();
     remove_client(sock);
     unlock_clients();
@@ -142,8 +142,8 @@ THREAD_RETURN handle_client(void* arg) {
     return THREAD_RET_VAL;
 }
 
-/// @brief Thread function to monitor console input for server shutdown command.
-///        Typing 'q' or 'Q' + Enter will initiate shutdown.
+/// @brief Monitor for main shutdown command. Q + enter
+///        Typing 'q' or 'Q' + Enter will start shutdown.
 /// @param arg Unused.
 /// @return Thread exit value.
 THREAD_RETURN server_control_thread(void* arg) {
@@ -155,7 +155,8 @@ THREAD_RETURN server_control_thread(void* arg) {
             printf("Shutdown command received.\n");
             server_running = false;
 
-            // Connect dummy socket to unblock accept()
+            // Connecting to the dummy socket to unblocks accept()
+
             socket_t dummy = net_create_socket();
             if (dummy != INVALID_SOCKET) {
                 struct sockaddr_in server_addr = {
@@ -189,7 +190,7 @@ int main() {
         return 1;
     }
 
-    // Step 3: Bind server socket to port and start listening
+    // Step 3: Bind server socket to port. Start listening.
     if (net_bind(server, SERVER_PORT) < 0 || net_listen(server) < 0) {
         fprintf(stderr, "Bind/listen failed.\n");
         net_close_socket(server);
@@ -207,7 +208,7 @@ int main() {
     pthread_create(&ctrl_thread, NULL, server_control_thread, NULL);
 #endif
 
-    // Step 5: Main server loop to accept new clients and start handler threads
+    // Step 5: Main server loop.
     while (server_running) {
         socket_t* client_ptr = malloc(sizeof(socket_t));
         *client_ptr = net_accept(server);
@@ -228,7 +229,7 @@ int main() {
 #endif
     }
 
-    // Step 6: Shutdown sequence
+    // Step 6: Shutdown sequence.
     printf("Server shutting down.\n");
 
     net_close_socket(server);

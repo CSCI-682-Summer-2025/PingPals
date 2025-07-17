@@ -67,7 +67,7 @@ int parse_command(const char* input, char* output, int output_size) {
     } else if (strncmp(input, "/join ", 6) == 0) {
         const char* chan = input + 6;   // Skip "/join " prefix, get rest of input. 
 
-        if (strlen(chan) == 0 || strchr(chan, ' ')) { // If is empty, or has spaces, invalid.
+        if (strlen(chan) == 0 || strchr(chan, ' ')) { // If is empty, or has spaces, invalid. Thus, return 0.
             return 0;  
         }
 
