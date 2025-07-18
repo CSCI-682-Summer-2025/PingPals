@@ -82,6 +82,9 @@ int parse_command(const char* input, char* output, int output_size) {
     } else if (strcmp(input, "/who") == 0) {
         snprintf(output, output_size, "WHO");
         return 1;
+    } else if (strncmp(input, "/kick ", 6) == 0) {
+        snprintf(output, output_size, "KICK %s", input + 6);
+        return 1;
     } else if (strcmp(input, "/quit") == 0) {
         snprintf(output, output_size, "QUIT");
         return 1;

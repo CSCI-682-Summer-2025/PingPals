@@ -12,6 +12,7 @@
 #define BUFFER_SIZE 1024 
 
 // Main struct for storing a client. 
+
 typedef struct {
     socket_t socket;
 #ifdef _WIN32
@@ -22,6 +23,7 @@ typedef struct {
     char username[MAX_USERNAME]; 
     char channel[MAX_CHANNEL_NAME];
     char color_code[MAX_COLOR];  // ANSI color escape code. Used for console output. 
+    int is_admin; // adding admin flag( 1 or 0)
 } Client;
 
 // Client list and count. Used by both server_main and server_utils
@@ -42,6 +44,7 @@ void lock_clients();
 void unlock_clients();
 
 int get_client_index(socket_t sock);
+int get_client_index_by_name(const char* name);
 void remove_client(socket_t sock);
 bool add_client(socket_t sock, const char* username);
 const char* get_client_name(socket_t sock);

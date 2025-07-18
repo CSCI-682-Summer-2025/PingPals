@@ -44,6 +44,8 @@ void handle_list(socket_t sock, char* args);
 void handle_who(socket_t sock, char* args);
 void handle_msg(socket_t sock, char* args);
 void handle_quit(socket_t sock, char* args);
+void handle_kick(socket_t sock, char* args);
+
 
 // Runs server commands.
 void dispatch_command(socket_t sock, const char* cmd, char* args);

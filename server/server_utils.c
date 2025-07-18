@@ -57,16 +57,21 @@ void broadcast(socket_t sender, const char* message) {
     unlock_clients();
 }
 
-    // define loging function
-    // get current time and set 
+    /* Logs chat messages to a file with timestamp, channel, and username
+    * Creates consistent format: [timestamp] channel @user: message */
     void log_message(const char* channel, const char* username, const char* message) {
     time_t now;
     time(&now);
+    // Format timestamp as [YYYY-MM-DD HH:MM:SS]
     char timestamp[20];
     strftime(timestamp, sizeof(timestamp), "[%Y-%m-%d %H:%M:%S]", localtime(&now));
     
-    FILE *logfile = fopen("server_chat.log", "a");
-    if (!logfile) return;
+    // create log files to the logs folder
+    FILE *logfile = fopen("logs/server_chat.log", "a");
+    if (!logfile){
+        perror("Failed to open log file"); 
+        return;
+    }
     
     fprintf(logfile, "%s %s @%s: %s\n", timestamp, channel, username, message);
     fclose(logfile);
@@ -288,7 +293,10 @@ void dispatch_command(socket_t sock, const char* cmd, char* args) {
         {"QUIT", handle_quit},
         {NULL, NULL}  // End of array. 
     };
-
+    // handles the kick commad
+    if (strcmp(cmd, "KICK") == 0) {
+        handle_kick(sock, args);
+    }
     // Iterate through commands and call matching handler.
     for (int i = 0; commands[i].name != NULL; i++) {
         if (strcmp(cmd, commands[i].name) == 0) {
@@ -304,4 +312,48 @@ void dispatch_command(socket_t sock, const char* cmd, char* args) {
     } else {
         broadcast(sock, "");
     }
+}
+
+// This handles kicking a user out of the chatroom
+//only admin can carry out this fuunctionality
+// the useer will be notified and will alert everyone
+void handle_kick(socket_t admin_sock, char* target_name) {
+    // Verify admin
+    int admin_idx = get_client_index(admin_sock);
+    if (admin_idx == -1 || !clients[admin_idx].is_admin) {
+        send_message(admin_sock, "Only admins can kick!");
+        return;
+    }
+
+    //Find target user
+    int target_idx = -1;
+    for (int i = 0; i < client_count; i++) {
+        if (strcmp(clients[i].username, target_name) == 0) {
+            target_idx = i;
+            break;
+        }
+    }
+
+    if (target_idx == -1) {
+        send_message(admin_sock, "User not found!");
+        return;
+    }
+
+    //Save socket BEFORE removing client
+    socket_t target_sock = clients[target_idx].socket;
+
+    //Remove from client list FIRST
+    remove_client(target_sock);
+
+    // Close socket AFTER removal (avoid "Bad file descriptor")
+    if (target_sock != INVALID_SOCKET) {
+        send_message(target_sock, "You were kicked by admin!\n");
+        shutdown(target_sock, SHUT_RDWR);  // Graceful disconnect
+        net_close_socket(target_sock);     // Then close
+    }
+
+    // Notify everyone
+    char notification[100];
+    snprintf(notification, sizeof(notification), "%s was kicked!", target_name);
+    broadcast(admin_sock, notification);
 }

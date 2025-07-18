@@ -72,7 +72,9 @@ bool add_client(socket_t sock, const char* username) {
     clients[client_count].username[MAX_USERNAME - 1] = '\0';  // Null-terminate
     clients[client_count].channel[0] = '\0';  // Start with no channel
 
-    
+    //set first user as admin and others as normal users
+    clients[client_count].is_admin = (client_count == 0);
+
     // Generate hash from the username to pick a color in the 216-color ANSI cube. Avoid system colors 0-15
     unsigned hash = 0;
     for (const char* p = username; *p; p++) {
@@ -96,4 +98,13 @@ const char* get_client_name(socket_t sock) {
         }
     }
     return "Unknown";
+}
+// get client by name
+int get_client_index_by_name(const char* name) {
+    for (int i = 0; i < client_count; i++) {
+        if (strcmp(clients[i].username, name) == 0) {
+            return i;
+        }
+    }
+    return -1;
 }
