@@ -57,11 +57,12 @@ void broadcast(socket_t sender, const char* message) {
     unlock_clients();
 }
 
-    // define loging function
-    // get current time and set 
+    /* Logs chat messages to a file with timestamp, channel, and username
+    * Creates consistent format: [timestamp] channel @user: message */
     void log_message(const char* channel, const char* username, const char* message) {
     time_t now;
     time(&now);
+    // Format timestamp as [YYYY-MM-DD HH:MM:SS]
     char timestamp[20];
     strftime(timestamp, sizeof(timestamp), "[%Y-%m-%d %H:%M:%S]", localtime(&now));
     
