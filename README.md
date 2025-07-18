@@ -208,5 +208,10 @@ Filtering Messages:
 - KEYWORD
 	grep "hi" server_chat.log
 
+## REMOVING A USER FROM CHAT
+- First user to be connected is admin by defaullt
+- Comand for triggering removal is : /kick username
+- Server validates admin priviliges before action
+- A message is broadcasted to all members of the channel after removal
 
 
