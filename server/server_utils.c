@@ -66,8 +66,12 @@ void broadcast(socket_t sender, const char* message) {
     char timestamp[20];
     strftime(timestamp, sizeof(timestamp), "[%Y-%m-%d %H:%M:%S]", localtime(&now));
     
-    FILE *logfile = fopen("server_chat.log", "a");
-    if (!logfile) return;
+    // create log files to the logs folder
+    FILE *logfile = fopen("logs/server_chat.log", "a");
+    if (!logfile){
+        perror("Failed to open log file"); 
+        return;
+    }
     
     fprintf(logfile, "%s %s @%s: %s\n", timestamp, channel, username, message);
     fclose(logfile);
