@@ -182,5 +182,31 @@ Cleaning Build Artifacts
 
     make clean
 
+## CHAT HISTORY FUNCTIONALITY - BY GODBLESS AMANKWAH
+This saves all the chat history 
+How to Retrieve Chat History 
+
+Open a New Terminal
+- Don't use the server/client terminals
+Navigate to Project Folder
+Do the following:
+- to verify Log file exists, enter : ls -l server_chat.log
+Viewing Options
+- Full Logs:
+	cat server_chat.log
+- Live Updates:
+	tail -f server_chat.log
+
+You can press Ctrl+C to exit
+
+OTHER FUNCTIONALITIES
+Filtering Messages:
+- BY USER
+	grep "@username" server-chat.log
+- BY CHANNEL
+	grep "#channel" server_chat.log	
+- KEYWORD
+	grep "hi" server_chat.log
+
 
 

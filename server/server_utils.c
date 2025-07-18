@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <time.h>
 
 /// @brief Validate if a given name is valid (letters, numbers, underscore, dash, or #).
 /// @param name The string to validate.
@@ -35,7 +36,9 @@ void broadcast(socket_t sender, const char* message) {
         send_message(sender, "Join a channel to send messages.\n");
         return;
     }
-
+    // this logs the message 
+    log_message(clients[sender_idx].channel, clients[sender_idx].username, message);
+    
     const char* username = clients[sender_idx].username;
     const char* channel = clients[sender_idx].channel;
     const char* color = clients[sender_idx].color_code;
@@ -53,6 +56,21 @@ void broadcast(socket_t sender, const char* message) {
     }
     unlock_clients();
 }
+
+    // define loging function
+    // get current time and set 
+    void log_message(const char* channel, const char* username, const char* message) {
+    time_t now;
+    time(&now);
+    char timestamp[20];
+    strftime(timestamp, sizeof(timestamp), "[%Y-%m-%d %H:%M:%S]", localtime(&now));
+    
+    FILE *logfile = fopen("server_chat.log", "a");
+    if (!logfile) return;
+    
+    fprintf(logfile, "%s %s @%s: %s\n", timestamp, channel, username, message);
+    fclose(logfile);
+    }
 
 /// @brief Send a list of active channels to the client.
 /// @param sock Client socket to send the channel list.
