@@ -30,6 +30,9 @@ void join_channel(socket_t sock, const char* name);
 //  Removes a user from their current channel and notifies others.
 void leave_channel(socket_t sock);
 
+//declaration to log chat messgae
+void log_message(const char* channel, const char* username, const char* message);
+
 //  Send a formatted message to a socket (for example,  printf + send).
 // For debugging.
 void debug_and_send(socket_t sock, const char* format, ...);
