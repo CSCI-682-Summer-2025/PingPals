@@ -135,6 +135,8 @@ Commands that can be run by the client:
 
     /msg @username message — to send a private message directly to another user.
 
+    /kick @username - will remove the user from the chat and broadcast a message to everyone
+
     /quit — to disconnect from the server and exit the client.
 
     You can also send plain messages without commands, which will be broadcasted to everyone in your current channel to interact with the server.
