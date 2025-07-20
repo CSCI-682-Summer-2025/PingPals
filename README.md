@@ -141,18 +141,21 @@ Commands that can be run by the client:
 
 Running Tests:
 
-  Parser tests:
-
-    make test_parser
-
-  Stress test (requires Python installed and available in system path):
-
-    make stress_test
-
   **Server must be running before running and starting stress test.
 
-  Alternatively, to do both:
-    make  run_stress_test_with_server
+Run stress_test.c in /test using 
+   gcc stress_test.c -o stress_test.exe -lws2_32
+
+This will run multiple tests:
+ * 1. Basic connection
+ * 2. Valid username handshake
+ * 3. Duplicate username rejection
+ * 4. Valid command usage
+ * 5. Stress test: 50+ clients joining channels, messaging, etc
+ * 6. Advanced stress tests: parallel joins, quits, /who, /leave, oversized messages
+
+ Provides output if test is ran successfully or fails.
+
 
 Manual Compilation (if not using Makefile)
 

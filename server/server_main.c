@@ -63,7 +63,13 @@ THREAD_RETURN handle_client(void* arg) {
     if (!added) {
         // Username taken or max clients reached
         send_message(sock, "Username already taken.\n");
+    #ifdef _WIN32
+        shutdown(sock, SD_SEND);
+    #else
         shutdown(sock, SHUT_WR);
+    #endif
+
+        //shutdown(sock, SHUT_WR);
     // Add pause.
     #ifdef _WIN32
         Sleep(250);
