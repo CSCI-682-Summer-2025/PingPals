@@ -41,3 +41,4 @@ logs/*
 # Don't include anything in documents folder. 
 docs/*
 !docs/.gitkeep
+nul
