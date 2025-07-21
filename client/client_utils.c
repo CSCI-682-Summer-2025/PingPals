@@ -41,54 +41,6 @@ int is_self_message(const char* msg, const char* check_username) {
     return (name_pos != NULL && colon_pos != NULL && name_pos < colon_pos);
 }
 
-/// @brief 
-/// @param input Pointer to character array to check. 
-/// @param output Pointer to character array holds output. 
-/// @param output_size 
-/// @return 
-int parse_command(const char* input, char* output, int output_size) {
-    if (strncmp(input, "/msg ", 5) == 0) {
-        const char* body = input + 5;   // Skip past "/msg " get rest of input.
-        const char* at = strchr(body, '@'); // Find @ symbol, indicating username.
-        const char* space = strchr(body, ' '); // Find 1st space after /msg command
-
-        bool has_at_symbol = (at != NULL);  
-        bool has_space = (space != NULL);
-        bool at_before_space = has_at_symbol && has_space && (at < space);
-        bool has_message = has_space && (strlen(space + 1) > 0);
-
-        // If any checks fail, reject command.
-        if (!has_at_symbol || !has_space || !at_before_space || !has_message) {
-            return 0;  // Invalid /msg format
-        }
-
-        snprintf(output, output_size, "MSG %s", body);
-        return 1;
-    } else if (strncmp(input, "/join ", 6) == 0) {
-        const char* chan = input + 6;   // Skip "/join " prefix, get rest of input. 
-
-        if (strlen(chan) == 0 || strchr(chan, ' ')) { // If is empty, or has spaces, invalid. Thus, return 0.
-            return 0;  
-        }
-
-        snprintf(output, output_size, "JOIN %s", chan);
-        return 1;
-    } else if (strcmp(input, "/leave") == 0) {
-        snprintf(output, output_size, "LEAVE");
-        return 1;
-    } else if (strcmp(input, "/list") == 0) {
-        snprintf(output, output_size, "LIST");
-        return 1;
-    } else if (strcmp(input, "/who") == 0) {
-        snprintf(output, output_size, "WHO");
-        return 1;
-    } else if (strcmp(input, "/quit") == 0) {
-        snprintf(output, output_size, "QUIT");
-        return 1;
-    }
-
-    return 0;
-}
 
 /// @brief Return number of bytes successfully sent. 0 if input message empty or null.
 /// @param sock 

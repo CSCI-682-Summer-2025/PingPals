@@ -2,7 +2,7 @@
 #define CLIENT_UTILS_H
 
 // Parses input to extract command. 
-int parse_command(const char* input, char* output, int output_size);
+//int parse_command(const char* input, char* output, int output_size);
 
 // Used to append username and channels to output.
 void print_user_channels_prompt(const char* username, char channels[][50], int channel_count);

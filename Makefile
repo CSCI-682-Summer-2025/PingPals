@@ -20,16 +20,17 @@ endif
 
 # Compiler and flags
 COMPILER = gcc
-CFLAGS = -Wall -Wextra -g -Iinclude -Iclient
+CFLAGS = -Wall -Wextra -g -Iinclude -Iclient -Ishared
 
-# Paths
-CLIENT_SRC = client/client.c client/client_utils.c
-SERVER_SRC = server/server_main.c server/client_manager.c server/server_utils.c $(PLATFORM_SRC)
+# Source file paths.
+SHARED_SRC = shared/command_parser.c 
+CLIENT_SRC = client/client.c client/client_utils.c $(SHARED_SRC)
+SERVER_SRC = server/server_main.c server/client_manager.c server/server_utils.c $(PLATFORM_SRC) $(SHARED_SRC)
+TEST_SRC = test/test_parser.c client/client_utils.c $(SHARED_SRC)
 
+# Executable paths. 
 CLIENT_EXE = client.exe
 SERVER_EXE = server.exe
-
-TEST_SRC = test/test_parser.c client/client_utils.c
 TEST_PARSER_EXE = test_parser.exe
 
 .PHONY: all client server test clean

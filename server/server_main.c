@@ -8,6 +8,7 @@
 #include "server_net.h"
 #include "client_manager.h"
 #include "server_utils.h"
+#include "../shared/command_parser.h"
 
 #ifdef _WIN32
     #include <windows.h>
@@ -73,11 +74,11 @@ THREAD_RETURN handle_client(void* arg) {
         net_close_socket(sock);
         return THREAD_RET_VAL;
     }
+    
 
     // Step 5: Main client message handling loop.
     while ((len = recv(sock, buf, BUFFER_SIZE - 1, 0)) > 0) {
         buf[len] = '\0';
-        printf("[DEBUG] Full input buffer: '%s'\n", buf);
         
         // Clean trailing newlines/carriage returns.
         newline = strchr(buf, '\n');
@@ -85,53 +86,26 @@ THREAD_RETURN handle_client(void* arg) {
         carriage = strchr(buf, '\r');
         if (carriage) *carriage = '\0';
 
+        if (*buf == '\0') // Ignore blank.
+            continue;  
 
-        // Extract command word (up to space or 15 characters).
-        char command[16] = {0};
-        int i = 0;
-        while (buf[i] && buf[i] != ' ' && i < 15) {
-            command[i] = buf[i];
-            i++;
-        }
-        command[i] = '\0';
-
-        // Convert command to uppercase. Allows for comparison.
-        for (int j = 0; j < i; j++) {
-            command[j] = (char)toupper((unsigned char)command[j]);
-        }
-
-        printf("Command: %s\n", command);
-
-        // Extract command arguments if any.
-        char* message_text = NULL;
-        if (buf[i] == ' ') {
-            message_text = buf + i + 1;
-        }
-
-        // Step 6: Process recognized commands.
-        if (strcmp(command, "QUIT") == 0) {
-            // Client requested to disconnect
-            const char* name = get_client_name(sock);
-            if (name) {
-                printf("Client user '%s' disconnected.\n", name);
-            } else {
-                printf("A client requested disconnect--unknown username.\n");
-            }
+        dispatch_result_t r = dispatch_command(sock, buf);
+        if (r == DISPATCH_QUIT) {
+            printf("User '%s' requested quit.\n", get_client_name(sock));
             break;
-        } else {
-            // All other commands, call utility method.
-            dispatch_command(sock, command, message_text);
         }
+
+    
     }
 
-    // Step 7: Handle client disconnect.
+    // Step 6: Handle client disconnect.
     if (len == 0) {
         // Client closed connection normally
     } else if (len < 0) {
         perror("recv failed");
     }
 
-    // Step 8: Remove client from other clients.
+    // Step 7: Remove client from other clients.
     lock_clients();
     remove_client(sock);
     unlock_clients();

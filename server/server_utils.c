@@ -1,5 +1,6 @@
 #include "server_utils.h"
 #include "client_manager.h"
+#include "../shared/command_parser.h" 
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
@@ -42,8 +43,6 @@ void broadcast(socket_t sender, const char* message) {
     const char* username = clients[sender_idx].username;
     const char* channel = clients[sender_idx].channel;
     const char* color = clients[sender_idx].color_code;
-
-    printf("[DEBUG] Broadcasting: '%s'\n", message);
 
     // Format message including sender's color and username.
     char formatted_message[BUFFER_SIZE];
@@ -276,35 +275,134 @@ void handle_quit(socket_t sock, char* args) {
 /// @param sock Client socket issuing the command.
 /// @param cmd Command string.
 /// @param args Arguments string following the command.
-void dispatch_command(socket_t sock, const char* cmd, char* args) {
-    typedef void (*cmd_handler_t)(socket_t, char*);
-    struct {
-        const char* name;
-        cmd_handler_t handler;
-    } commands[] = {
-        {"JOIN", handle_join},
-        {"LEAVE", handle_leave},
-        {"LIST", handle_list},
-        {"WHO", handle_who},
-        {"MSG", handle_msg},
-        {"QUIT", handle_quit},
-        {NULL, NULL}  // End of array. 
-    };
 
-    // Iterate through commands and call matching handler.
-    for (int i = 0; commands[i].name != NULL; i++) {
-        if (strcmp(cmd, commands[i].name) == 0) {
-            commands[i].handler(sock, args);
-            return;
-        }
+dispatch_result_t dispatch_command(socket_t sock, const char* line) {
+    if (!line) return DISPATCH_OK;
+
+    // ignore leading spaces (shouldn't happen; caller trimmed) */
+    while (*line == ' ' || *line == '\t') line++;
+
+    if (*line == '\0') {
+        return DISPATCH_OK;  /* ignore blank */
     }
+
+    char args[BUFFER_SIZE];
+    command_t c = parse_command(line, args, sizeof(args));
+
+    switch (c) 
+    {
+        case CMD_NONE:
+            // plain chat 
+            broadcast(sock, line);
+            return DISPATCH_OK;
+
+        case CMD_INVALID:
+        case CMD_UNKNOWN:
+            send_message(sock, "Unrecognized input\n");
+            return DISPATCH_OK;
+
+        case CMD_MSG:
+            // Handle_msg mutates args. give it a mutable buffer 
+            {
+                char mutable_args[BUFFER_SIZE];
+                strncpy(mutable_args, args, sizeof(mutable_args));
+                mutable_args[sizeof(mutable_args) - 1] = '\0';
+                handle_msg(sock, mutable_args);
+            }
+            return DISPATCH_OK;
+
+        case CMD_JOIN:
+            {
+                char mutable_args[BUFFER_SIZE];
+                strncpy(mutable_args, args, sizeof(mutable_args));
+                mutable_args[sizeof(mutable_args) - 1] = '\0';
+                handle_join(sock, mutable_args);
+            }
+            return DISPATCH_OK;
+
+        case CMD_LEAVE:
+            handle_leave(sock, NULL);
+            return DISPATCH_OK;
+
+        case CMD_LIST:
+            handle_list(sock, NULL);
+            return DISPATCH_OK;
+
+        case CMD_WHO:
+            handle_who(sock, NULL);
+            return DISPATCH_OK;
+
+        case CMD_QUIT:
+            handle_quit(sock, NULL);  // Doesn't do anything for now, other than return quit.
+            return DISPATCH_QUIT;
+    }
+
+    // It shouldn't get here.
+    send_message(sock, "Unrecognized input\n");
+    return DISPATCH_OK;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// void dispatch_command(socket_t sock, const char* cmd, char* args) {
+//     typedef void (*cmd_handler_t)(socket_t, char*);
+//     struct {
+//         const char* name;
+//         cmd_handler_t handler;
+//     } commands[] = {
+//         {"JOIN", handle_join},
+//         {"LEAVE", handle_leave},
+//         {"LIST", handle_list},
+//         {"WHO", handle_who},
+//         {"MSG", handle_msg},
+//         {"QUIT", handle_quit},
+//         {NULL, NULL}  // End of array. 
+//     };
+
+//     // Iterate through commands and call matching handler.
+//     for (int i = 0; commands[i].name != NULL; i++) {
+//         if (strcmp(cmd, commands[i].name) == 0) {
+//             commands[i].handler(sock, args);
+//             return;
+//         }
+//     }
    
 
-    // If made it to this point, then will be message broadcast out.
-    // If nothing there, send out empty string. 
-    if (args != NULL && *args != '\0') {
-        broadcast(sock, args);
-    } else {
-        broadcast(sock, cmd);
-    }
-}
+//     // If made it to this point, then will be message broadcast out.
+//     // If nothing there, send out empty string. 
+//     if (args != NULL && *args != '\0') {
+//         char combined[BUFFER_SIZE];
+//         snprintf(combined, sizeof(combined), "%s %s", cmd, args);
+//         broadcast(sock, combined);
+//     } else {
+//         broadcast(sock, cmd);
+//     }
+// }

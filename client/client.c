@@ -18,6 +18,7 @@
 #endif
 
 #include "client_utils.h"
+#include "../shared/command_parser.h"
 
 // OS sepecific typedefs and macros.
 #ifdef _WIN32
@@ -41,6 +42,27 @@ char username[MAX_NAME_LEN];
 char current_channels[MAX_CHANNELS][MAX_NAME_LEN];
 int channel_count = 0;
 
+
+
+/// @brief Update channels based on command.
+/// @param cmd Leave or Join command. 
+/// @param args  Stores which channels need to be joined.
+static void update_channel_list(command_t cmd, const char *args) {
+    switch (cmd) {
+    case CMD_JOIN:
+        if (args && *args && channel_count < MAX_CHANNELS) {
+            strncpy(current_channels[channel_count], args, MAX_NAME_LEN - 1);
+            current_channels[channel_count][MAX_NAME_LEN - 1] = '\0';
+            channel_count++;
+        }
+        break;
+    case CMD_LEAVE:
+        if (channel_count > 0) channel_count--;
+        break;
+    default:
+        break;
+    }
+}
 
 
 /// @brief Cleanly discconnect from server. Close resources, exit program. 
@@ -82,17 +104,6 @@ void handle_sigint(int sig) {
     disconnect_cleanly(0);
 }
 
-/// @brief Update list of self joining channel. Tracked for channels self joined output..
-/// @param input Message with join or leave command. 
-void update_channel_list(const char* input) {
-    if (strncmp(input, "JOIN ", 5) == 0) {  // If find join command, then add to list.
-        if (channel_count < MAX_CHANNELS) {
-            strncpy(current_channels[channel_count++], input + 5, MAX_NAME_LEN - 1); // copy channel name (after "JOIN ") into current_channel array.
-        }
-    } else if (strcmp(input, "LEAVE") == 0) { // decrement channel count.
-        if (channel_count > 0) channel_count--;
-    }
-}
 
 
 /// @brief Core loop for receiving messages from the server and displaying them.
@@ -168,7 +179,7 @@ int main() {
 
     struct sockaddr_in server_addr;
     char buffer[MAX_INPUT];
-    char formatted_cmd[MAX_INPUT]; // Holds formatted_cmd version of user input before sending to server.
+    //char formatted_cmd[MAX_INPUT]; // Holds formatted_cmd version of user input before sending to server.
 
     // Create socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -236,6 +247,9 @@ int main() {
     }
 #endif
 
+    // Made it to this point, then successful. Output so user knows can continue inputting.
+    print_user_channels_prompt(username, current_channels, channel_count);
+
     // Main loop. Read user input, process commands, send messages.
     while (1) {
         
@@ -247,34 +261,34 @@ int main() {
         }
         buffer[strcspn(buffer, "\n")] = '\0';  // Strip newline
 
+        // Gets command types. Still send entire buffer to server.
+        char args[MAX_INPUT];
+        command_t cmd = parse_command(buffer, args, sizeof(args));
+        
+
         // Handle quit command.
-        if (strcmp(buffer, "/quit") == 0) {
-            strcpy(formatted_cmd, "QUIT");
-            safe_send(sockfd, formatted_cmd);
+        if (cmd == CMD_QUIT) {
+            safe_send(sockfd, buffer);
             shutdown(sockfd, SHUT_RDWR);
             break;
         }
 
-        
+        /* Local UI maintenance */
+        update_channel_list(cmd, args);
 
-        // If input is a command, parse and send formatted_cmd command string
-        if (buffer[0] == '/') {
-            // parse_command returns 1 on success
-            if (parse_command(buffer, formatted_cmd, MAX_INPUT)) { // Returns 1 on success. Send command formatted_cmd text to server.
-                print_user_channels_prompt(username, current_channels, channel_count);
-                
-                // Update local channel list, checking for /leave and /join.
-                update_channel_list(buffer);
-                
-                safe_send(sockfd, formatted_cmd);
-            } else {
-                printf("Invalid command format.\n");
-            }
-        } else {
-            // Normal chat message, send raw input
-            print_user_channels_prompt(username, current_channels, channel_count);
-            safe_send(sockfd, buffer);
+        // Notify user if command is invalid.
+        if (cmd == CMD_INVALID) {
+            printf("Invalid command.\n");
+        } else if (cmd == CMD_UNKNOWN) {
+            printf("Unknown command.\n");
         }
+
+        // Send buffer to server.
+        safe_send(sockfd, buffer);
+
+        /* Reprint prompt */
+        print_user_channels_prompt(username, current_channels, channel_count);
+
         
     }
 
