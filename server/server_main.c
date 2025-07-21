@@ -77,24 +77,20 @@ THREAD_RETURN handle_client(void* arg) {
     // Step 5: Main client message handling loop.
     while ((len = recv(sock, buf, BUFFER_SIZE - 1, 0)) > 0) {
         buf[len] = '\0';
-
+        printf("[DEBUG] Full input buffer: '%s'\n", buf);
+        
         // Clean trailing newlines/carriage returns.
         newline = strchr(buf, '\n');
         if (newline) *newline = '\0';
         carriage = strchr(buf, '\r');
         if (carriage) *carriage = '\0';
 
-        // Handle command prefix '/'
-        char* cmd_ptr = buf;
-        if (cmd_ptr[0] == '/') {
-            cmd_ptr++;
-        }
 
         // Extract command word (up to space or 15 characters).
         char command[16] = {0};
         int i = 0;
-        while (cmd_ptr[i] && cmd_ptr[i] != ' ' && i < 15) {
-            command[i] = cmd_ptr[i];
+        while (buf[i] && buf[i] != ' ' && i < 15) {
+            command[i] = buf[i];
             i++;
         }
         command[i] = '\0';
@@ -104,10 +100,12 @@ THREAD_RETURN handle_client(void* arg) {
             command[j] = (char)toupper((unsigned char)command[j]);
         }
 
+        printf("Command: %s\n", command);
+
         // Extract command arguments if any.
-        char* args = NULL;
-        if (cmd_ptr[i] == ' ') {
-            args = cmd_ptr + i + 1;
+        char* message_text = NULL;
+        if (buf[i] == ' ') {
+            message_text = buf + i + 1;
         }
 
         // Step 6: Process recognized commands.
@@ -122,7 +120,7 @@ THREAD_RETURN handle_client(void* arg) {
             break;
         } else {
             // All other commands, call utility method.
-            dispatch_command(sock, command, args);
+            dispatch_command(sock, command, message_text);
         }
     }
 
@@ -141,6 +139,7 @@ THREAD_RETURN handle_client(void* arg) {
     net_close_socket(sock);
     return THREAD_RET_VAL;
 }
+
 
 /// @brief Monitor for main shutdown command. Q + enter
 ///        Typing 'q' or 'Q' + Enter will start shutdown.

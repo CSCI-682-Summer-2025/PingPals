@@ -43,6 +43,8 @@ void broadcast(socket_t sender, const char* message) {
     const char* channel = clients[sender_idx].channel;
     const char* color = clients[sender_idx].color_code;
 
+    printf("[DEBUG] Broadcasting: '%s'\n", message);
+
     // Format message including sender's color and username.
     char formatted_message[BUFFER_SIZE];
     snprintf(formatted_message, sizeof(formatted_message), "%s%s%s: %s", color, username, "\x1b[0m", message);
@@ -296,12 +298,13 @@ void dispatch_command(socket_t sock, const char* cmd, char* args) {
             return;
         }
     }
+   
 
-    // If arguments exist and are not an empty string, broadcast them.
-    // otherwise, broadcast an empty string.
+    // If made it to this point, then will be message broadcast out.
+    // If nothing there, send out empty string. 
     if (args != NULL && *args != '\0') {
         broadcast(sock, args);
     } else {
-        broadcast(sock, "");
+        broadcast(sock, cmd);
     }
 }

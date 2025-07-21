@@ -118,6 +118,7 @@ static void receive_loop(void) {
         }
 
         // Update the prompt to show username and joined channels.
+        printf("\33[2K\r");
         print_user_channels_prompt(username, current_channels, channel_count);
     }
 
@@ -237,7 +238,7 @@ int main() {
 
     // Main loop. Read user input, process commands, send messages.
     while (1) {
-        print_user_channels_prompt(username, current_channels, channel_count);
+        
 
         // Check for EOF or error reading input. 
         if (fgets(buffer, MAX_INPUT, stdin) == NULL) {
@@ -254,21 +255,27 @@ int main() {
             break;
         }
 
-        // Update local channel list, checking for /leave and /join.
-        update_channel_list(buffer);
+        
 
         // If input is a command, parse and send formatted_cmd command string
         if (buffer[0] == '/') {
             // parse_command returns 1 on success
             if (parse_command(buffer, formatted_cmd, MAX_INPUT)) { // Returns 1 on success. Send command formatted_cmd text to server.
+                print_user_channels_prompt(username, current_channels, channel_count);
+                
+                // Update local channel list, checking for /leave and /join.
+                update_channel_list(buffer);
+                
                 safe_send(sockfd, formatted_cmd);
             } else {
                 printf("Invalid command format.\n");
             }
         } else {
             // Normal chat message, send raw input
+            print_user_channels_prompt(username, current_channels, channel_count);
             safe_send(sockfd, buffer);
         }
+        
     }
 
     // Clean up: close connection and wait for receiver thread to finish

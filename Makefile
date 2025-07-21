@@ -57,3 +57,9 @@ run_stress_test_with_server:
 
 clean:
 	-$(DEL) $(CLIENT_EXE) $(SERVER_EXE) $(TEST_PARSER_EXE) 2>nul || true
+
+remake:
+	make clean
+	make all
+
+	
