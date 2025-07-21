@@ -211,6 +211,18 @@ int main() {
     // Remove trailing newline from username input.
     username[strcspn(username, "\n")] = '\0';
 
+    // Simple broadcast to show commands
+    printf("Welcome to PingPals!\n");
+    printf("Please join a #channel. You can send plain messages without commands.\n");
+    printf("List of Commands: \n");
+    printf("\t * /join #channel: to join or switch to a specific channel \n");
+    printf("\t * /leave: to leave the current chat channel \n");
+    printf("\t * /list: to display all active channels on the server\n");
+    printf("\t * /who: to see the list of users currently in your channel \n");
+    printf("\t * /msg @username [message]: to send a private message directly to another user \n");
+    printf("\t * /kick @username: will remove the user from the chat and broadcast a message to everyone \n");
+    printf("\t * /quit: to disconnect from the server and exit the client\n");
+
     // Attempt connection to the server.
     if (connect(sockfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
 #ifdef _WIN32

@@ -3,7 +3,16 @@
 #include <time.h>
 #include <stdbool.h>
 #include <sys/types.h>
-#include <sys/socket.h>
+
+#ifdef _WIN32
+    #include <winsock2.h>
+    #include <windows.h>
+    #pragma comment(lib, "ws2_32.lib")
+#else
+    #include <sys/socket.h>
+#endif
+
+//#include <sys/socket.h>
 
 #include "client_utils.h"
 
