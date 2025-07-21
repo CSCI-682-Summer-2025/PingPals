@@ -138,21 +138,28 @@ Commands that can be run by the client:
     /quit — to disconnect from the server and exit the client.
 
     You can also send plain messages without commands, which will be broadcasted to everyone in your current channel to interact with the server.
+    
+---
+Running Stress tests: - By Honesty Beaton ⭐
 
-Running Tests:
+  **Server must be running before running and starting stress test.**
 
-  Parser tests:
+Run stress_test.c in /test using:
 
-    make test_parser
+    gcc stress_test.c -o stress_test.exe -lws2_32
 
-  Stress test (requires Python installed and available in system path):
+This will run multiple tests:
+ * 1. Basic connection
+ * 2. Valid username handshake
+ * 3. Duplicate username rejection
+ * 4. Valid command usage
+ * 5. Stress test: 50+ clients joining channels, messaging, etc
+ * 6. Advanced stress tests: parallel joins, quits, /who, /leave, oversized messages
 
-    make stress_test
+Provides output if test is ran successfully or fails.
 
-  **Server must be running before running and starting stress test.
+---
 
-  Alternatively, to do both:
-    make  run_stress_test_with_server
 
 Manual Compilation (if not using Makefile)
 
