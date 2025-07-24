@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 
-// Command enumeration.
+// Types of commands.
 typedef enum {
     CMD_NONE = -1,    // Normal message.
     CMD_MSG,
@@ -13,10 +13,10 @@ typedef enum {
     CMD_WHO,
     CMD_QUIT,
     CMD_INVALID,       // Invalid syntax.
-    CMD_UNKNOWN        // Starts with '/'. Unrecognized.
+    CMD_UNKNOWN        // Starts with '/' but is unrecognized command.
 } command_t;
 
-// Parse an input string to detect a command.
+// Parse input string to detect a command.
 // Returns one of the command_t values.
 // input: Raw user input string.
 // args:  Buffer for text after the command.

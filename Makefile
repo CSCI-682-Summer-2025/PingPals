@@ -44,17 +44,19 @@ client: $(CLIENT_SRC)
 server: $(SERVER_SRC)
 	$(COMPILER) $(CFLAGS) -o $(SERVER_EXE) $(SERVER_SRC) $(WS_LIB)
 
-stress_test:
+stress_test: # ./server.exe has to be running first in different window.
 	$(PYTHON) ./test/stress_test.py
 
 test_parser: $(TEST_SRC)
+	-$(DEL) $(TEST_PARSER_EXE) 2>nul || true
 	$(COMPILER) $(CFLAGS) -o $(TEST_PARSER_EXE) $(TEST_SRC) $(WS_LIB)
 	./$(TEST_PARSER_EXE)
 
 run_stress_test_with_server:
 	@echo "Launching server..."
 	@./$(SERVER_EXE) & sleep 1
-	@$(PYTHON) ./test/stress_test.py
+	$(PYTHON) ./test/stress_test.py
+
 
 clean:
 	-$(DEL) $(CLIENT_EXE) $(SERVER_EXE) $(TEST_PARSER_EXE) 2>nul || true

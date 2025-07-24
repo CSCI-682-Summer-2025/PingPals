@@ -16,7 +16,7 @@
 
 #include "client_utils.h"
 
-/// @brief Adds @username channel... > in front of each message.
+/// @brief Adds @username channel_name> in front of each message.
 /// @param username 
 /// @param channels 
 /// @param channel_count 

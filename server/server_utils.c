@@ -164,7 +164,7 @@ void private_msg(socket_t sender, const char* target, const char* msg) {
     }
     unlock_clients();
 
-    // Target not found; let sender know.
+    // The target wasn't found. let sender know.
     send_message(sender, "User not found.\n");
 }
 
@@ -206,49 +206,27 @@ void leave_channel(socket_t sock) {
 
 /// @brief Handler for JOIN command.
 /// @param sock Client socket.
-/// @param args Channel name to join.
-void handle_join(socket_t sock, char* args) {
-    if (args && *args) {
-        join_channel(sock, args);
+/// @param line_argument Channel name to join.
+void handle_join(socket_t sock, char* line_argument) {
+    if (line_argument && *line_argument) {
+        join_channel(sock, line_argument);
     } else {
         send_message(sock, "JOIN command requires a channel name.\n");
     }
 }
 
-/// @brief Handler for LEAVE, /leave command
-/// @param sock Client socket.
-/// @param args Unused.
-void handle_leave(socket_t sock, char* args) {
-    (void)args;
-    leave_channel(sock);
-}
 
-/// @brief Handler for LIST, /list command.
-/// @param sock Client socket.
-/// @param args Unused.
-void handle_list(socket_t sock, char* args) {
-    (void)args;
-    list_channels(sock);
-}
-
-/// @brief Handler for WHO, /who command.
-/// @param sock Client socket.
-/// @param args Unused.
-void handle_who(socket_t sock, char* args) {
-    (void)args;
-    who_in_channel(sock);
-}
 
 /// @brief Handler for MSG, /msg command. Parses and sends private message.
 /// @param sock Client socket.
-/// @param args Message argument string starting with '@username'.
-void handle_msg(socket_t sock, char* args) {
-    if (args && *args) {
-        if (args[0] == '@') {
-            char* space = strchr(args, ' ');
+/// @param line_argument Message argument string starting with '@username'.
+void handle_msg(socket_t sock, char* line_argument) {
+    if (line_argument && *line_argument) {
+        if (line_argument[0] == '@') {
+            char* space = strchr(line_argument, ' ');
             if (space) {
                 *space = '\0';  // Separate target username and message.
-                private_msg(sock, args + 1, space + 1);
+                private_msg(sock, line_argument + 1, space + 1);
             } else {
                 send_message(sock, "Invalid MSG format.\n");
             }
@@ -261,39 +239,34 @@ void handle_msg(socket_t sock, char* args) {
 }
 
 /// @brief Handler for QUIT, /quit command.
-/// @param sock Client socket.
-/// @param args Unused.
 /// @note Actual quit handling is done in main loop by breaking on quit.
-void handle_quit(socket_t sock, char* args) {
-    (void)sock;
-    (void)args;
+void handle_quit() {
     // No operation here. Handled main client loop.
 }
 
-/// @brief Call respective handler for cmd. 
-///        If command not recognized, treats as broadcast message.
-/// @param sock Client socket issuing the command.
-/// @param cmd Command string.
-/// @param args Arguments string following the command.
 
-dispatch_result_t dispatch_command(socket_t sock, const char* line) {
-    if (!line) return DISPATCH_OK;
+/// @brief Used to extract command and parse.
+/// @param sock Client socket issuing the command.
+/// @param text Holds chat text passed in being checked for commands.
+/// @return 
+dispatch_result_t dispatch_command(socket_t sock, const char* text) {
+    if (!text) return DISPATCH_OK;
 
     // ignore leading spaces (shouldn't happen; caller trimmed) */
-    while (*line == ' ' || *line == '\t') line++;
+    while (*text == ' ' || *text == '\t') text++;
 
-    if (*line == '\0') {
+    if (*text == '\0') {
         return DISPATCH_OK;  /* ignore blank */
     }
 
-    char args[BUFFER_SIZE];
-    command_t c = parse_command(line, args, sizeof(args));
+    char temp_buffer[BUFFER_SIZE];
+    command_t c = parse_command(text, temp_buffer, sizeof(temp_buffer));
 
     switch (c) 
     {
         case CMD_NONE:
             // plain chat 
-            broadcast(sock, line);
+            broadcast(sock, text);
             return DISPATCH_OK;
 
         case CMD_INVALID:
@@ -302,38 +275,38 @@ dispatch_result_t dispatch_command(socket_t sock, const char* line) {
             return DISPATCH_OK;
 
         case CMD_MSG:
-            // Handle_msg mutates args. give it a mutable buffer 
+            // Handle_msg mutates temp_buffer. Give it a buffer taht is allowed to be changed.
             {
-                char mutable_args[BUFFER_SIZE];
-                strncpy(mutable_args, args, sizeof(mutable_args));
-                mutable_args[sizeof(mutable_args) - 1] = '\0';
-                handle_msg(sock, mutable_args);
+                char mutable_buffer[BUFFER_SIZE];
+                strncpy(mutable_buffer, temp_buffer, sizeof(mutable_buffer));
+                mutable_buffer[sizeof(mutable_buffer) - 1] = '\0';
+                handle_msg(sock, mutable_buffer);
             }
             return DISPATCH_OK;
 
         case CMD_JOIN:
             {
-                char mutable_args[BUFFER_SIZE];
-                strncpy(mutable_args, args, sizeof(mutable_args));
-                mutable_args[sizeof(mutable_args) - 1] = '\0';
-                handle_join(sock, mutable_args);
+                char mutable_buffer[BUFFER_SIZE];
+                strncpy(mutable_buffer,temp_buffer, sizeof(mutable_buffer));
+                mutable_buffer[sizeof(mutable_buffer) - 1] = '\0';
+                handle_join(sock, mutable_buffer);
             }
             return DISPATCH_OK;
 
         case CMD_LEAVE:
-            handle_leave(sock, NULL);
+            leave_channel(sock);
             return DISPATCH_OK;
 
         case CMD_LIST:
-            handle_list(sock, NULL);
+            list_channels(sock);
             return DISPATCH_OK;
 
         case CMD_WHO:
-            handle_who(sock, NULL);
+            who_in_channel(sock);
             return DISPATCH_OK;
 
         case CMD_QUIT:
-            handle_quit(sock, NULL);  // Doesn't do anything for now, other than return quit.
+            handle_quit(sock); // Doesn't do anything for now, other than return quit.
             return DISPATCH_QUIT;
     }
 
@@ -370,39 +343,3 @@ dispatch_result_t dispatch_command(socket_t sock, const char* line) {
 
 
 
-
-
-// void dispatch_command(socket_t sock, const char* cmd, char* args) {
-//     typedef void (*cmd_handler_t)(socket_t, char*);
-//     struct {
-//         const char* name;
-//         cmd_handler_t handler;
-//     } commands[] = {
-//         {"JOIN", handle_join},
-//         {"LEAVE", handle_leave},
-//         {"LIST", handle_list},
-//         {"WHO", handle_who},
-//         {"MSG", handle_msg},
-//         {"QUIT", handle_quit},
-//         {NULL, NULL}  // End of array. 
-//     };
-
-//     // Iterate through commands and call matching handler.
-//     for (int i = 0; commands[i].name != NULL; i++) {
-//         if (strcmp(cmd, commands[i].name) == 0) {
-//             commands[i].handler(sock, args);
-//             return;
-//         }
-//     }
-   
-
-//     // If made it to this point, then will be message broadcast out.
-//     // If nothing there, send out empty string. 
-//     if (args != NULL && *args != '\0') {
-//         char combined[BUFFER_SIZE];
-//         snprintf(combined, sizeof(combined), "%s %s", cmd, args);
-//         broadcast(sock, combined);
-//     } else {
-//         broadcast(sock, cmd);
-//     }
-// }

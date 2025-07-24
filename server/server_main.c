@@ -86,7 +86,7 @@ THREAD_RETURN handle_client(void* arg) {
     while ((len = recv(sock, buf, BUFFER_SIZE - 1, 0)) > 0) {
         buf[len] = '\0';
         
-        // Clean trailing newlines/carriage returns.
+        // Clean trailing newlines and carriage returns off the buffer.
         newline = strchr(buf, '\n');
         if (newline) *newline = '\0';
         carriage = strchr(buf, '\r');

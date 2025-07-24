@@ -33,14 +33,10 @@ void leave_channel(socket_t sock);
 //declaration to log chat messgae
 void log_message(const char* channel, const char* username, const char* message);
 
-//  Send a formatted message to a socket (for example,  printf + send).
-// For debugging.
-void debug_and_send(socket_t sock, const char* format, ...);
-
-/* Result codes returned by dispatch_command(). */
+// Result codes returned by dispatch_command(). 
 typedef enum {
-    DISPATCH_OK = 0,      /* keep connection alive */
-    DISPATCH_QUIT = 1     /* client requested quit */
+    DISPATCH_OK = 0,      // keep connection alive 
+    DISPATCH_QUIT = 1     // client requested quit 
 } dispatch_result_t;
 
 
@@ -50,13 +46,10 @@ typedef enum {
 dispatch_result_t dispatch_command(socket_t sock, const char* line);
 
 
-
-void handle_join(socket_t sock, char* args);
-void handle_leave(socket_t sock, char* args);
-void handle_list(socket_t sock, char* args);
-void handle_who(socket_t sock, char* args);
+// Helper methods for join, msg, and quit.
+void handle_join(socket_t sock, char* args); 
 void handle_msg(socket_t sock, char* args);
-void handle_quit(socket_t sock, char* args);
+void handle_quit();
 
 
 

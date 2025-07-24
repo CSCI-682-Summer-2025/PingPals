@@ -179,7 +179,6 @@ int main() {
 
     struct sockaddr_in server_addr;
     char buffer[MAX_INPUT];
-    //char formatted_cmd[MAX_INPUT]; // Holds formatted_cmd version of user input before sending to server.
 
     // Create socket
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
